@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { GameState, Block, BlockType, GRID_SIZE, BLOCK_COLORS, BLOCK_SHAPES } from '../types/game';
+import { GameState, Block, BlockType, GRID_SIZE, BLOCK_COLORS, BLOCK_SHAPES, GridCell } from '../types/game';
 
 const generateRandomBlock = (): Block => {
   const types: BlockType[] = ['L', 'T', 'I', 'O', 'Z', 'S'];
@@ -17,7 +17,7 @@ const generateNewBlocks = (count: number): Block[] => {
   return Array(count).fill(null).map(() => generateRandomBlock());
 };
 
-const canPlaceBlock = (grid: (string | null)[][], block: Block, position: { row: number; col: number }): boolean => {
+const canPlaceBlock = (grid: (GridCell | null)[][], block: Block, position: { row: number; col: number }): boolean => {
   return block.cells.every(([dr, dc]) => {
     const r = position.row + dr;
     const c = position.col + dc;
@@ -25,17 +25,20 @@ const canPlaceBlock = (grid: (string | null)[][], block: Block, position: { row:
   });
 };
 
-const placeBlock = (grid: (string | null)[][], block: Block, position: { row: number; col: number }): (string | null)[][] => {
+const placeBlock = (grid: (GridCell | null)[][], block: Block, position: { row: number; col: number }): (GridCell | null)[][] => {
   const newGrid = grid.map(row => [...row]);
   block.cells.forEach(([dr, dc]) => {
     const r = position.row + dr;
     const c = position.col + dc;
-    newGrid[r][c] = block.color;
+    newGrid[r][c] = {
+      color: block.color,
+      type: block.type,
+    };
   });
   return newGrid;
 };
 
-const checkLines = (grid: (string | null)[][]): { newGrid: (string | null)[][]; linesCleared: number } => {
+const checkLines = (grid: (GridCell | null)[][]): { newGrid: (GridCell | null)[][]; linesCleared: number } => {
   let linesCleared = 0;
   const newGrid = grid.map(row => [...row]);
   

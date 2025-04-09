@@ -1,6 +1,6 @@
-import { Block, GRID_SIZE } from '../types/game';
+import { Block, GRID_SIZE, GridCell } from '../types/game';
 
-export const canPlaceBlock = (grid: (string | null)[][], block: Block, position: { row: number; col: number }): boolean => {
+export const canPlaceBlock = (grid: (GridCell | null)[][], block: Block, position: { row: number; col: number }): boolean => {
   return block.cells.every(([dr, dc]) => {
     const r = position.row + dr;
     const c = position.col + dc;

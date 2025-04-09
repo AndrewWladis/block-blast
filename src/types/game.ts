@@ -6,8 +6,13 @@ export interface Block {
   color: string;
 }
 
+export interface GridCell {
+  color: string;
+  type: BlockType;
+}
+
 export interface GameState {
-  grid: (string | null)[][]; // null for empty, string for color
+  grid: (GridCell | null)[][]; // null for empty, GridCell for filled
   currentBlocks: Block[];
   score: number;
   gameOver: boolean;

@@ -1,11 +1,29 @@
 import React, { useRef } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Dimensions, Image, ImageStyle } from 'react-native';
 import { useGame } from '../hooks/useGame';
 import { GRID_SIZE } from '../types/game';
 import { canPlaceBlock } from '../utils/gameUtils';
 import DraggableBlock from './DraggableBlock';
 
+// Import block images
+const BLOCK_IMAGES = {
+  'L': require('../../assets/belmar.jpeg'),
+  'T': require('../../assets/morbius.png'),
+  'I': require('../../assets/belmar.jpeg'),
+  'O': require('../../assets/belmar.jpeg'),
+  'Z': require('../../assets/belmar.jpeg'),
+  'S': require('../../assets/belmar.jpeg'),
+};
+
 const CELL_SIZE = Dimensions.get('window').width / (GRID_SIZE + 4);
+
+const blockImageStyle: ImageStyle = {
+  width: '100%',
+  height: '100%',
+  position: 'absolute',
+  top: 0,
+  left: 0,
+};
 
 const Game = () => {
   const { gameState, placeBlockOnGrid, resetGame } = useGame();
@@ -51,9 +69,17 @@ const Game = () => {
                 key={`cell-${rowIndex}-${colIndex}`}
                 style={[
                   styles.cell,
-                  { backgroundColor: cell || '#FFFFFF' },
+                  { backgroundColor: cell?.color || '#FFFFFF' },
                 ]}
-              />
+              >
+                {cell?.type && (
+                  <Image
+                    source={BLOCK_IMAGES[cell.type]}
+                    style={blockImageStyle}
+                    resizeMode="cover"
+                  />
+                )}
+              </View>
             ))}
           </View>
         ))}
@@ -115,6 +141,7 @@ const styles = StyleSheet.create({
     height: CELL_SIZE,
     borderWidth: 1,
     borderColor: '#DDD',
+    overflow: 'hidden',
   },
   blockTray: {
     flexDirection: 'row',

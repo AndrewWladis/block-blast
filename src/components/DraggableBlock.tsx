@@ -1,6 +1,24 @@
 import React, { useRef } from 'react';
-import { View, PanResponder, Animated, StyleSheet } from 'react-native';
+import { View, PanResponder, Animated, StyleSheet, Image, ImageStyle } from 'react-native';
 import { Block } from '../types/game';
+
+// Import block images
+const BLOCK_IMAGES = {
+  'L': require('../../assets/belmar.jpeg'),
+  'T': require('../../assets/morbius.png'),
+  'I': require('../../assets/belmar.jpeg'),
+  'O': require('../../assets/belmar.jpeg'),
+  'Z': require('../../assets/belmar.jpeg'),
+  'S': require('../../assets/belmar.jpeg'),
+};
+
+const blockImageStyle: ImageStyle = {
+  width: '100%',
+  height: '100%',
+  position: 'absolute',
+  top: 0,
+  left: 0,
+};
 
 interface DraggableBlockProps {
   block: Block;
@@ -73,7 +91,13 @@ const DraggableBlock: React.FC<DraggableBlockProps> = ({ block, cellSize, onDrag
               left: dc * cellSize,
             },
           ]}
-        />
+        >
+          <Image
+            source={BLOCK_IMAGES[block.type]}
+            style={blockImageStyle}
+            resizeMode="cover"
+          />
+        </View>
       ))}
     </Animated.View>
   );
@@ -88,6 +112,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderWidth: 1,
     borderColor: '#DDD',
+    overflow: 'hidden',
   },
 });
 
