@@ -3,11 +3,24 @@ import { View, StyleSheet, Text, TouchableOpacity, Dimensions } from 'react-nati
 import { useGame } from '../hooks/useGame';
 import { GRID_SIZE } from '../types/game';
 import { canPlaceBlock } from '../utils/gameUtils';
+import DraggableBlock from './DraggableBlock';
 
 const CELL_SIZE = Dimensions.get('window').width / (GRID_SIZE + 4);
 
 const Game = () => {
   const { gameState, placeBlockOnGrid, resetGame } = useGame();
+
+  const handleBlockDragEnd = (index: number, position: { x: number; y: number }) => {
+    const block = gameState.currentBlocks[index];
+    const gridX = Math.round((position.x - CELL_SIZE) / CELL_SIZE);
+    const gridY = Math.round((position.y - CELL_SIZE) / CELL_SIZE);
+
+    if (gridX >= 0 && gridX < GRID_SIZE && gridY >= 0 && gridY < GRID_SIZE) {
+      if (canPlaceBlock(gameState.grid, block, { row: gridY, col: gridX })) {
+        placeBlockOnGrid(index, { row: gridY, col: gridX });
+      }
+    }
+  };
 
   const renderGrid = () => {
     return (
@@ -33,35 +46,12 @@ const Game = () => {
     return (
       <View style={styles.blockTray}>
         {gameState.currentBlocks.map((block, index) => (
-          <TouchableOpacity
+          <DraggableBlock
             key={`block-${index}`}
-            style={styles.block}
-            onPress={() => {
-              // Place block at first available position
-              for (let r = 0; r < GRID_SIZE; r++) {
-                for (let c = 0; c < GRID_SIZE; c++) {
-                  if (canPlaceBlock(gameState.grid, block, { row: r, col: c })) {
-                    placeBlockOnGrid(index, { row: r, col: c });
-                    return;
-                  }
-                }
-              }
-            }}
-          >
-            {block.cells.map(([dr, dc], cellIndex) => (
-              <View
-                key={`block-cell-${cellIndex}`}
-                style={[
-                  styles.blockCell,
-                  {
-                    backgroundColor: block.color,
-                    top: dr * CELL_SIZE,
-                    left: dc * CELL_SIZE,
-                  },
-                ]}
-              />
-            ))}
-          </TouchableOpacity>
+            block={block}
+            cellSize={CELL_SIZE}
+            onDragEnd={(position) => handleBlockDragEnd(index, position)}
+          />
         ))}
       </View>
     );
@@ -111,18 +101,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     width: '100%',
     padding: 10,
-  },
-  block: {
-    width: CELL_SIZE * 4,
-    height: CELL_SIZE * 4,
     position: 'relative',
-  },
-  blockCell: {
-    position: 'absolute',
-    width: CELL_SIZE,
-    height: CELL_SIZE,
-    borderWidth: 1,
-    borderColor: '#DDD',
   },
   score: {
     fontSize: 24,
