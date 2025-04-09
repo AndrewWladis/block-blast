@@ -79,7 +79,16 @@ export const useGame = () => {
       const block = prev.currentBlocks[blockIndex];
       if (!block) return prev;
       
-      if (!canPlaceBlock(prev.grid, block, position)) return prev;
+      console.log('Attempting to place block:', {
+        blockType: block.type,
+        position,
+        blockCells: block.cells
+      });
+      
+      if (!canPlaceBlock(prev.grid, block, position)) {
+        console.log('Cannot place block at position');
+        return prev;
+      }
       
       const newGrid = placeBlock(prev.grid, block, position);
       const { newGrid: clearedGrid, linesCleared } = checkLines(newGrid);
@@ -90,16 +99,35 @@ export const useGame = () => {
       const newBlocks = [...prev.currentBlocks];
       newBlocks[blockIndex] = generateRandomBlock();
       
-      // Check if game is over
-      const isGameOver = newBlocks.every(block => {
+      // Check if game is over by seeing if any of the new blocks can be placed
+      const isGameOver = newBlocks.every(newBlock => {
+        let canPlaceAnywhere = false;
+        console.log('Checking block:', newBlock.type);
+        
+        // Check each possible position on the grid
         for (let r = 0; r < GRID_SIZE; r++) {
           for (let c = 0; c < GRID_SIZE; c++) {
-            if (canPlaceBlock(clearedGrid, block, { row: r, col: c })) {
-              return false;
+            const canPlace = canPlaceBlock(clearedGrid, newBlock, { row: r, col: c });
+            if (canPlace) {
+              console.log(`Block ${newBlock.type} can be placed at (${r}, ${c})`);
+              canPlaceAnywhere = true;
+              break;
             }
           }
+          if (canPlaceAnywhere) break;
         }
-        return true;
+        
+        if (!canPlaceAnywhere) {
+          console.log(`Block ${newBlock.type} cannot be placed anywhere`);
+        }
+        
+        return !canPlaceAnywhere;
+      });
+      
+      console.log('Game over check result:', {
+        isGameOver,
+        newBlocks: newBlocks.map(b => b.type),
+        gridState: clearedGrid.map(row => row.map(cell => cell ? 'X' : 'O').join('')).join('\n')
       });
       
       return {

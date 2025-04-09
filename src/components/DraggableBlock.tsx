@@ -1,16 +1,7 @@
 import React, { useRef } from 'react';
 import { View, PanResponder, Animated, StyleSheet, Image, ImageStyle } from 'react-native';
 import { Block } from '../types/game';
-
-// Import block images
-const BLOCK_IMAGES = {
-  'L': require('../../assets/belmar.jpeg'),
-  'T': require('../../assets/morbius.png'),
-  'I': require('../../assets/bear.png'),
-  'O': require('../../assets/serious.png'),
-  'Z': require('../../assets/belmar.jpeg'),
-  'S': require('../../assets/belmar.jpeg'),
-};
+import { BLOCK_IMAGES } from '../constants/images';
 
 const blockImageStyle: ImageStyle = {
   width: '100%',

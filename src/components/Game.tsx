@@ -4,16 +4,7 @@ import { useGame } from '../hooks/useGame';
 import { GRID_SIZE } from '../types/game';
 import { canPlaceBlock } from '../utils/gameUtils';
 import DraggableBlock from './DraggableBlock';
-
-// Import block images
-const BLOCK_IMAGES = {
-  'L': require('../../assets/belmar.jpeg'),
-  'T': require('../../assets/morbius.png'),
-  'I': require('../../assets/belmar.jpeg'),
-  'O': require('../../assets/belmar.jpeg'),
-  'Z': require('../../assets/belmar.jpeg'),
-  'S': require('../../assets/belmar.jpeg'),
-};
+import { BLOCK_IMAGES } from '../constants/images';
 
 const CELL_SIZE = Dimensions.get('window').width / (GRID_SIZE + 4);
 
@@ -39,6 +30,8 @@ const Game = () => {
   const gridRef = useRef<View>(null);
   const colorIndex = useRef(0);
   const animatedValue = useRef(new Animated.Value(0)).current;
+  const scoreScale = useRef(new Animated.Value(1)).current;
+  const prevScore = useRef(0);
 
   useEffect(() => {
     const animateBackground = () => {
@@ -59,6 +52,26 @@ const Game = () => {
     inputRange: BACKGROUND_COLORS.map((_, index) => index),
     outputRange: BACKGROUND_COLORS,
   });
+
+  // Add score animation effect
+  useEffect(() => {
+    if (gameState.score > prevScore.current) {
+      // Animate the score text
+      Animated.sequence([
+        Animated.timing(scoreScale, {
+          toValue: 1.5,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scoreScale, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+    prevScore.current = gameState.score;
+  }, [gameState.score]);
 
   const handleBlockDragEnd = (index: number, position: { x: number; y: number }, touchOffset: { x: number; y: number }) => {
     const block = gameState.currentBlocks[index];
@@ -155,7 +168,16 @@ const Game = () => {
 
   return (
     <Animated.View style={[styles.container, { backgroundColor }]}>
-      <Text style={styles.score}>Score: {gameState.score}</Text>
+      <Animated.Text 
+        style={[
+          styles.score,
+          {
+            transform: [{ scale: scoreScale }]
+          }
+        ]}
+      >
+        Score: {gameState.score}
+      </Animated.Text>
       {gameState.gameOver && (
         <View style={styles.gameOver}>
           <Text style={styles.gameOverText}>Game Over!</Text>
@@ -179,7 +201,7 @@ const styles = StyleSheet.create({
   },
   grid: {
     marginBottom: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // 70% opacity white
+    backgroundColor: 'rgba(255, 255, 255, 0.1)', // 70% opacity white
   },
   row: {
     flexDirection: 'row',
