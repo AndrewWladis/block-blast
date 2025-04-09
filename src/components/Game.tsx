@@ -21,15 +21,20 @@ const Game = () => {
         const relativeX = position.x - pageX - touchOffset.x;
         const relativeY = position.y - pageY - touchOffset.y;
         
-        // Add half a cell size to center the block
+        // Calculate grid position, ensuring we account for the block's height
         const gridX = Math.round(relativeX / CELL_SIZE);
         const gridY = Math.round(relativeY / CELL_SIZE);
 
         console.log('Drop position:', { relativeX, relativeY, gridX, gridY });
 
+        // Check if the block can be placed at this position
         if (gridX >= 0 && gridX < GRID_SIZE && gridY >= 0 && gridY < GRID_SIZE) {
-          if (canPlaceBlock(gameState.grid, block, { row: gridY, col: gridX })) {
-            placeBlockOnGrid(index, { row: gridY, col: gridX });
+          // Check if the block would fit within the grid bounds
+          const maxRow = Math.max(...block.cells.map(([dr, _]) => dr));
+          if (gridY + maxRow < GRID_SIZE) {
+            if (canPlaceBlock(gameState.grid, block, { row: gridY, col: gridX })) {
+              placeBlockOnGrid(index, { row: gridY, col: gridX });
+            }
           }
         }
       });

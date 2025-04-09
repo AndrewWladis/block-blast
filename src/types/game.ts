@@ -19,7 +19,7 @@ export interface GridPosition {
   col: number;
 }
 
-export const GRID_SIZE = 9;
+export const GRID_SIZE = 8;
 export const BLOCK_COLORS = [
   '#FF5252', // Red
   '#4CAF50', // Green
