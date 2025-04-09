@@ -43,17 +43,37 @@ const Game = () => {
         const gridX = Math.round(relativeX / CELL_SIZE);
         const gridY = Math.round(relativeY / CELL_SIZE);
 
-        console.log('Drop position:', { relativeX, relativeY, gridX, gridY });
+        console.log('Drop position:', { 
+          relativeX, 
+          relativeY, 
+          gridX, 
+          gridY,
+          pageX,
+          pageY,
+          touchOffset,
+          blockType: block.type,
+          blockCells: block.cells
+        });
 
         // Check if the block can be placed at this position
         if (gridX >= 0 && gridX < GRID_SIZE && gridY >= 0 && gridY < GRID_SIZE) {
           // Check if the block would fit within the grid bounds
           const maxRow = Math.max(...block.cells.map(([dr, _]) => dr));
-          if (gridY + maxRow < GRID_SIZE) {
-            if (canPlaceBlock(gameState.grid, block, { row: gridY, col: gridX })) {
+          const maxCol = Math.max(...block.cells.map(([_, dc]) => dc));
+          console.log('Block bounds:', { maxRow, maxCol, gridY, gridX });
+          
+          if (gridY + maxRow < GRID_SIZE && gridX + maxCol < GRID_SIZE) {
+            const canPlace = canPlaceBlock(gameState.grid, block, { row: gridY, col: gridX });
+            console.log('Can place block:', canPlace);
+            
+            if (canPlace) {
               placeBlockOnGrid(index, { row: gridY, col: gridX });
             }
+          } else {
+            console.log('Block would exceed grid bounds');
           }
+        } else {
+          console.log('Drop position outside grid');
         }
       });
     }
