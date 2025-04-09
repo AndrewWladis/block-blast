@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { useGame } from '../hooks/useGame';
 import { GRID_SIZE } from '../types/game';
@@ -9,22 +9,36 @@ const CELL_SIZE = Dimensions.get('window').width / (GRID_SIZE + 4);
 
 const Game = () => {
   const { gameState, placeBlockOnGrid, resetGame } = useGame();
+  const gridRef = useRef<View>(null);
 
-  const handleBlockDragEnd = (index: number, position: { x: number; y: number }) => {
+  const handleBlockDragEnd = (index: number, position: { x: number; y: number }, touchOffset: { x: number; y: number }) => {
     const block = gameState.currentBlocks[index];
-    const gridX = Math.round((position.x - CELL_SIZE) / CELL_SIZE);
-    const gridY = Math.round((position.y - CELL_SIZE) / CELL_SIZE);
+    
+    if (gridRef.current) {
+      // Get grid position relative to screen
+      gridRef.current.measure((x, y, width, height, pageX, pageY) => {
+        // Calculate grid coordinates, accounting for touch offset
+        const relativeX = position.x - pageX - touchOffset.x;
+        const relativeY = position.y - pageY - touchOffset.y;
+        
+        // Add half a cell size to center the block
+        const gridX = Math.round(relativeX / CELL_SIZE);
+        const gridY = Math.round(relativeY / CELL_SIZE);
 
-    if (gridX >= 0 && gridX < GRID_SIZE && gridY >= 0 && gridY < GRID_SIZE) {
-      if (canPlaceBlock(gameState.grid, block, { row: gridY, col: gridX })) {
-        placeBlockOnGrid(index, { row: gridY, col: gridX });
-      }
+        console.log('Drop position:', { relativeX, relativeY, gridX, gridY });
+
+        if (gridX >= 0 && gridX < GRID_SIZE && gridY >= 0 && gridY < GRID_SIZE) {
+          if (canPlaceBlock(gameState.grid, block, { row: gridY, col: gridX })) {
+            placeBlockOnGrid(index, { row: gridY, col: gridX });
+          }
+        }
+      });
     }
   };
 
   const renderGrid = () => {
     return (
-      <View style={styles.grid}>
+      <View ref={gridRef} style={styles.grid}>
         {gameState.grid.map((row, rowIndex) => (
           <View key={`row-${rowIndex}`} style={styles.row}>
             {row.map((cell, colIndex) => (
@@ -50,7 +64,7 @@ const Game = () => {
             key={`block-${index}`}
             block={block}
             cellSize={CELL_SIZE}
-            onDragEnd={(position) => handleBlockDragEnd(index, position)}
+            onDragEnd={(position, touchOffset) => handleBlockDragEnd(index, position, touchOffset)}
           />
         ))}
       </View>
@@ -86,6 +100,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#333',
     marginBottom: 20,
+    backgroundColor: '#FFFFFF',
   },
   row: {
     flexDirection: 'row',

@@ -5,32 +5,40 @@ import { Block } from '../types/game';
 interface DraggableBlockProps {
   block: Block;
   cellSize: number;
-  onDragEnd: (position: { x: number; y: number }) => void;
+  onDragEnd: (position: { x: number; y: number }, touchOffset: { x: number; y: number }) => void;
 }
 
 const DraggableBlock: React.FC<DraggableBlockProps> = ({ block, cellSize, onDragEnd }) => {
   const pan = useRef(new Animated.ValueXY()).current;
-  const isDragging = useRef(false);
+  const touchOffset = useRef({ x: 0, y: 0 });
+  const blockRef = useRef<View>(null);
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
-        isDragging.current = true;
-        const currentValue = { x: 0, y: 0 };
-        pan.x.extractOffset();
-        pan.y.extractOffset();
-        pan.setValue(currentValue);
+      onPanResponderGrant: (evt) => {
+        if (blockRef.current) {
+          blockRef.current.measure((x, y, width, height, pageX, pageY) => {
+            // Calculate where within the block the user touched
+            touchOffset.current = {
+              x: evt.nativeEvent.pageX - pageX,
+              y: evt.nativeEvent.pageY - pageY,
+            };
+          });
+        }
+        pan.setValue({ x: 0, y: 0 });
       },
       onPanResponderMove: Animated.event(
         [null, { dx: pan.x, dy: pan.y }],
         { useNativeDriver: false }
       ),
-      onPanResponderRelease: (_, gestureState) => {
-        isDragging.current = false;
-        pan.flattenOffset();
-        onDragEnd({ x: gestureState.moveX, y: gestureState.moveY });
+      onPanResponderRelease: (evt) => {
+        const currentPosition = {
+          x: evt.nativeEvent.pageX,
+          y: evt.nativeEvent.pageY,
+        };
+        onDragEnd(currentPosition, touchOffset.current);
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
           useNativeDriver: false,
@@ -41,6 +49,7 @@ const DraggableBlock: React.FC<DraggableBlockProps> = ({ block, cellSize, onDrag
 
   return (
     <Animated.View
+      ref={blockRef}
       style={[
         styles.container,
         {
@@ -73,6 +82,7 @@ const DraggableBlock: React.FC<DraggableBlockProps> = ({ block, cellSize, onDrag
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
+    zIndex: 1,
   },
   cell: {
     position: 'absolute',
