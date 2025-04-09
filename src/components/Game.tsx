@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Dimensions, Image, ImageStyle } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, StyleSheet, Text, TouchableOpacity, Dimensions, Image, ImageStyle, Animated } from 'react-native';
 import { useGame } from '../hooks/useGame';
 import { GRID_SIZE } from '../types/game';
 import { canPlaceBlock } from '../utils/gameUtils';
@@ -25,9 +25,40 @@ const blockImageStyle: ImageStyle = {
   left: 0,
 };
 
+// Background colors to cycle through
+const BACKGROUND_COLORS = [
+  '#1A1A1A', // Dark gray
+  '#0D1B2A', // Dark blue
+  '#1B263B', // Darker blue
+  '#2D3748', // Slate gray
+  '#1A365D', // Deep blue
+];
+
 const Game = () => {
   const { gameState, placeBlockOnGrid, resetGame } = useGame();
   const gridRef = useRef<View>(null);
+  const colorIndex = useRef(0);
+  const animatedValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animateBackground = () => {
+      colorIndex.current = (colorIndex.current + 1) % BACKGROUND_COLORS.length;
+      Animated.timing(animatedValue, {
+        toValue: colorIndex.current,
+        duration: 5000, // 5 seconds per color
+        useNativeDriver: false,
+      }).start(() => {
+        animateBackground();
+      });
+    };
+
+    animateBackground();
+  }, []);
+
+  const backgroundColor = animatedValue.interpolate({
+    inputRange: BACKGROUND_COLORS.map((_, index) => index),
+    outputRange: BACKGROUND_COLORS,
+  });
 
   const handleBlockDragEnd = (index: number, position: { x: number; y: number }, touchOffset: { x: number; y: number }) => {
     const block = gameState.currentBlocks[index];
@@ -123,7 +154,7 @@ const Game = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { backgroundColor }]}>
       <Text style={styles.score}>Score: {gameState.score}</Text>
       {gameState.gameOver && (
         <View style={styles.gameOver}>
@@ -135,7 +166,7 @@ const Game = () => {
       )}
       {renderGrid()}
       {renderBlockTray()}
-    </View>
+    </Animated.View>
   );
 };
 
@@ -144,14 +175,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F5F5F5',
     padding: 20,
   },
   grid: {
-    borderWidth: 2,
-    borderColor: '#333',
     marginBottom: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', // 70% opacity white
   },
   row: {
     flexDirection: 'row',
@@ -171,9 +199,13 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   score: {
-    fontSize: 24,
+    fontSize: 36,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: 'white',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   gameOver: {
     position: 'absolute',
