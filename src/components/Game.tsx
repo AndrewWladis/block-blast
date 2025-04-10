@@ -25,6 +25,62 @@ const BACKGROUND_COLORS = [
   '#1A365D', // Deep blue
 ];
 
+const NUM_STARS = 100;
+const STAR_COLORS = ['#FFFFFF', '#FFD700', '#FFA500', '#FF69B4'];
+
+const StarsBackground = () => {
+  const stars = useRef(
+    Array(NUM_STARS).fill(0).map(() => ({
+      x: Math.random() * Dimensions.get('window').width,
+      y: Math.random() * Dimensions.get('window').height,
+      size: Math.random() * 3 + 1,
+      color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
+      opacity: new Animated.Value(Math.random()),
+    }))
+  ).current;
+
+  useEffect(() => {
+    stars.forEach((star) => {
+      const twinkle = () => {
+        Animated.sequence([
+          Animated.timing(star.opacity, {
+            toValue: 1,
+            duration: Math.random() * 2000 + 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(star.opacity, {
+            toValue: 0.2,
+            duration: Math.random() * 2000 + 1000,
+            useNativeDriver: true,
+          }),
+        ]).start(() => twinkle());
+      };
+      twinkle();
+    });
+  }, []);
+
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      {stars.map((star, index) => (
+        <Animated.View
+          key={index}
+          style={[
+            styles.star,
+            {
+              left: star.x,
+              top: star.y,
+              width: star.size,
+              height: star.size,
+              backgroundColor: star.color,
+              opacity: star.opacity,
+            },
+          ]}
+        />
+      ))}
+    </View>
+  );
+};
+
 const Game = () => {
   const { gameState, placeBlockOnGrid, resetGame } = useGame();
   const gridRef = useRef<View>(null);
@@ -171,7 +227,8 @@ const Game = () => {
   };
 
   return (
-    <Animated.View style={[styles.container, { backgroundColor }]}>
+    <View style={styles.container}>
+      <StarsBackground />
       <Animated.Text 
         style={[
           styles.score,
@@ -192,7 +249,7 @@ const Game = () => {
       )}
       {renderGrid()}
       {renderBlockTray()}
-    </Animated.View>
+    </View>
   );
 };
 
@@ -201,6 +258,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#000000',
     padding: 20,
   },
   grid: {
@@ -258,6 +316,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  star: {
+    position: 'absolute',
+    borderRadius: 50,
   },
 });
 
