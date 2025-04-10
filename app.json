@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "block-blast",
+    "name": "Belmar Blast",
     "slug": "block-blast",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.andywladis.blockblast"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,6 +24,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "953ee2c3-0054-4b66-9054-108be3e4aeb9"
+      }
     }
   }
 }
