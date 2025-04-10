@@ -104,9 +104,13 @@ const Game = () => {
           // Check if the block would fit within the grid bounds
           const maxRow = Math.max(...block.cells.map(([dr, _]) => dr));
           const maxCol = Math.max(...block.cells.map(([_, dc]) => dc));
-          console.log('Block bounds:', { maxRow, maxCol, gridY, gridX });
+          const minCol = Math.min(...block.cells.map(([_, dc]) => dc));
+          console.log('Block bounds:', { maxRow, maxCol, minCol, gridY, gridX });
           
-          if (gridY + maxRow < GRID_SIZE && gridX + maxCol < GRID_SIZE) {
+          // Check if the block would fit within the grid bounds, accounting for the block's shape
+          if (gridY + maxRow <= GRID_SIZE - 1 && 
+              gridX + maxCol <= GRID_SIZE - 1 && 
+              gridX + minCol >= 0) {
             const canPlace = canPlaceBlock(gameState.grid, block, { row: gridY, col: gridX });
             console.log('Can place block:', canPlace);
             
